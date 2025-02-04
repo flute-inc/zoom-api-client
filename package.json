@@ -18,7 +18,7 @@
   "license": "MIT",
   "description": "Zoom API Client for Node.js",
   "engines": {
-    "node": ">=20"
+    "node": ">=18"
   },
   "homepage": "https://github.com/nektarai/zoom-api-client#readme",
   "dependencies": {},
@@ -40,7 +40,7 @@
     "prettier": "^3.3.2",
     "prettier2": "npm:prettier@^2.8.8",
     "typescript": "^5.5.3",
-    "rimraf": "^6.0.1"
+    "rimraf": "^5.0.2"
   },
   "optionalDependencies": {
     "@swc/core-darwin-arm64": "1.3.2",
