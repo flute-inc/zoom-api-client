@@ -4,6 +4,8 @@ import {
     ZoomApi$Meetings$Get,
     ZoomApi$Meetings$List,
     ZoomApi$Meetings$Recordings,
+    ZoomApi$Meetings$Update$Request,
+    ZoomApi$Meetings$Update$Response,
     ZoomApi$PastMeeting$Details,
     ZoomApi$PastMeeting$Participants,
     ZoomApi$Reports$Meetings,
@@ -91,6 +93,24 @@ export class ZoomApi {
             ): Promise<ZoomApi$Users$Get> {
                 return self.client.request({
                     url: `${self.client.BASE_API_URL}/users/${userId}`,
+                    method: 'GET',
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+        };
+    }
+
+
+    /** From: https://developers.zoom.us/docs/api/accounts/ */
+    accounts() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return {
+            settings(
+                accountId: string,
+            ): Promise<ZoomApi$Users$Get> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/accounts/${accountId}/settings`,
                     method: 'GET',
                     headers: self.getAuthHeader(),
                 }) as any;
@@ -192,6 +212,21 @@ export class ZoomApi {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify(meeting),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/PATCH/meetings/{meetingId} */
+            update(
+                meetingId: string,
+                params?: ZoomApi$Meetings$Update$Request,
+            ): Promise<ZoomApi$Meetings$Update$Response> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}`,
+                    method: 'PATCH',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(params),
                 }) as any;
             },
             /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/users/{userId}/meetings */
