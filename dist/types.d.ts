@@ -9,7 +9,7 @@ export type ZoomClientOptions = {
     verificationKey?: string;
 };
 export type ZoomRequest = {
-    method: 'GET' | 'POST';
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH';
     url: string;
     params?: Record<string, any>;
     body?: RequestInit['body'];
@@ -476,14 +476,14 @@ export type ZoomApi$Meetings$Create$Request = Partial<{
      */
     pre_schedule: boolean;
     /**
+     * The email address or user ID of the user to schedule a meeting for.
+     */
+    schedule_for: string;
+    /**
      * The meeting's recurrence information.
      * Use this object only for a meeting with type 8, a recurring meeting with a fixed time.
      */
     recurrence: ZoomApi$Meetings$$Recurrence;
-    /**
-     * The email address or user ID of the user to schedule a meeting for.
-     */
-    schedule_for: string;
     /**
      * Information about the meeting's settings.
      */
@@ -530,6 +530,115 @@ export type ZoomApi$Meetings$Create$Response = Partial<{
     host_email: string;
     id: number;
     uuid: string;
+    agenda: string;
+    created_at: string;
+    duration: number;
+    encrypted_password: string;
+    pstn_password: string;
+    h323_password: string;
+    join_url: string;
+    chat_join_url: string;
+    occurrences: {
+        duration: number;
+        occurrence_id: string;
+        start_time: string;
+        status: 'available' | 'deleted';
+    }[];
+    password: string;
+    pmi: string;
+    pre_schedule: boolean;
+    recurrence: ZoomApi$Meetings$$Recurrence;
+    settings: ZoomApi$Meetings$$Settings;
+    start_time: string;
+    start_url: string;
+    timezone: string;
+    topic: string;
+    tracking_fields: {
+        field: string;
+        value: string;
+        visible: boolean;
+    }[];
+    type: 1 | 2 | 3 | 8;
+    dynamic_host_key: string;
+    creation_source: 'other' | 'open_api' | 'web_portal';
+}>;
+export type ZoomApi$Meetings$Update$Request = Partial<{
+    /**
+     * The meeting's agenda.
+     * This value has a maximum length of 2,000 characters.
+     */
+    agenda: string;
+    /**
+     * The meeting's scheduled duration in minutes.
+     * This field is only used for scheduled meetings (2).
+     */
+    duration: number;
+    /**
+     * The passcode required to join the meeting.
+     * By default, a passcode can only have a maximum length of 10 characters
+     * and only contain alphanumeric characters and the @, -, _, and * characters.
+     */
+    password: string;
+    /**
+     * Whether to create a prescheduled meeting via the GSuite app.
+     * This only supports the meeting type value of 2 (scheduled meetings)
+     * and 3 (recurring meetings with no fixed time).
+     */
+    pre_schedule: boolean;
+    /**
+     * The meeting's recurrence information.
+     * Use this object only for a meeting with type 8, a recurring meeting with a fixed time.
+     */
+    recurrence: ZoomApi$Meetings$$Recurrence;
+    /**
+     * The email address or user ID of the user to schedule a meeting for.
+     */
+    schedule_for: string;
+    /**
+     * Information about the meeting's settings.
+     */
+    settings: ZoomApi$Meetings$$Settings;
+    /**
+     * The meeting's start time.
+     * This field is only used for scheduled or recurring meetings with a fixed time.
+     * This supports local time and GMT formats.
+     */
+    start_time: string;
+    /**
+     * The account admin meeting template ID used to schedule a meeting using a meeting template.
+     */
+    template_id: string;
+    /**
+     * The timezone to assign to the start_time value.
+     * This field is only used for scheduled or recurring meetings with a fixed time.
+     */
+    timezone: string;
+    /**
+     * The meeting's topic.
+     */
+    topic: string;
+    /**
+     * Information about the meeting's tracking fields.
+     */
+    tracking_fields: {
+        field: string;
+        value: string;
+    }[];
+    /**
+     * The meeting type.
+     * 1 - Instant meeting.
+     * 2 - Scheduled meeting. Default.
+     * 3 - Recurring meeting with no fixed time.
+     * 8 - Recurring meeting with a fixed time.
+     * 10 - A screen share only meeting.
+     */
+    type: number;
+}>;
+export type ZoomApi$Meetings$Update$Response = Partial<{
+    id: number;
+    uuid: string;
+    assistant_id: string;
+    host_email: string;
     agenda: string;
     created_at: string;
     duration: number;

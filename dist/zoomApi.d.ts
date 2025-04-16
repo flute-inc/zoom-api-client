@@ -1,4 +1,4 @@
-import { ZoomApi$Meetings$Create$Request, ZoomApi$Meetings$Create$Response, ZoomApi$Meetings$Get, ZoomApi$Meetings$List, ZoomApi$Meetings$Recordings, ZoomApi$PastMeeting$Details, ZoomApi$PastMeeting$Participants, ZoomApi$Reports$Meetings, ZoomApi$Users$$Status, ZoomApi$Users$Get, ZoomApi$Users$List, ZoomApi$ZAKToken, ZoomTokens } from './types';
+import { ZoomApi$Meetings$Create$Request, ZoomApi$Meetings$Create$Response, ZoomApi$Meetings$Get, ZoomApi$Meetings$List, ZoomApi$Meetings$Recordings, ZoomApi$Meetings$Update$Request, ZoomApi$Meetings$Update$Response, ZoomApi$PastMeeting$Details, ZoomApi$PastMeeting$Participants, ZoomApi$Reports$Meetings, ZoomApi$Users$$Status, ZoomApi$Users$Get, ZoomApi$Users$List, ZoomApi$ZAKToken, ZoomTokens } from './types';
 import { ZoomClient } from './zoomClient';
 export declare class ZoomApi {
     private client;
@@ -27,6 +27,10 @@ export declare class ZoomApi {
         }>): Promise<ZoomApi$Users$List>;
         /** From: https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/user */
         get(userId: string): Promise<ZoomApi$Users$Get>;
+    };
+    /** From: https://developers.zoom.us/docs/api/accounts/ */
+    accounts(): {
+        settings(accountId: string): Promise<ZoomApi$Users$Get>;
     };
     /** From: https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/pastMeetingParticipants */
     pastMeeting(meetingId: string): {
@@ -66,6 +70,8 @@ export declare class ZoomApi {
     meetings(): {
         /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/POST/users/{userId}/meetings */
         create(userId: string, meeting: ZoomApi$Meetings$Create$Request): Promise<ZoomApi$Meetings$Create$Response>;
+        /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/PATCH/meetings/{meetingId} */
+        update(meetingId: string, params?: ZoomApi$Meetings$Update$Request): Promise<ZoomApi$Meetings$Update$Response>;
         /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/users/{userId}/meetings */
         list(userId: string, params?: Partial<{
             type: "scheduled" | "live" | "upcoming" | "upcoming_meetings" | "previous_meetings";
