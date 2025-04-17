@@ -9,7 +9,7 @@ export type ZoomClientOptions = {
     verificationKey?: string;
 };
 export type ZoomRequest = {
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH';
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     url: string;
     params?: Record<string, any>;
     body?: RequestInit['body'];
@@ -41,7 +41,98 @@ export type ZoomTokens = Partial<ZoomTokensResponse$Success> & Required<Pick<Zoo
 export type ZoomApi$ZAKToken = {
     token: string;
 };
+export type ZoomApi$Groups$List = {
+    /**
+     * A next page token will be returned whenever the set of available results exceeds the current page size. The expiration period for this token is 15 minutes.
+     */
+    next_page_token: string;
+    page_count: number;
+    page_number: number;
+    page_size: number;
+    total_records: number;
+    groups: ZoomApi$Groups$List$$Group[];
+};
+export type ZoomApi$Groups$List$$Group = {
+    /**
+     * Group ID.
+     */
+    id: string;
+    /**
+     * Group name.
+     */
+    name: string;
+    /**
+     * Total number of members in this group.
+     */
+    total_members?: number;
+};
+export type ZoomApi$Groups$Get = {
+    /**
+     * Group ID.
+     */
+    id: string;
+    /**
+     * Group name.
+     */
+    name: string;
+    /**
+     * Total number of members in this group.
+     */
+    total_members?: number;
+};
+export type ZoomApi$Groups$AddMembers$Request = {
+    /**
+     * List of Group members.
+     */
+    members: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id?: string;
+    }[];
+};
+export type ZoomApi$Groups$AddMembers$Response = {
+    /**
+     * List of members that were added to the group.
+     */
+    added_members: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id: string;
+    }[];
+    /**
+     * List of members that were not added to the group.
+     */
+    not_added_members?: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id?: string;
+    }[];
+};
 export type ZoomApi$Users$$Status = 'pending' | 'active' | 'inactive';
+export type ZoomApi$Users$Create$Action = 'create' | 'autoCreate' | 'custCreate' | 'ssoCreate';
+export type ZoomApi$Users$Create$UserInfo = {
+    email: string;
+    first_name: string;
+    last_name: string;
+    display_name: string;
+    password: string;
+    type: 1 | 2 | 4 | 99;
+};
 export type ZoomApi$Users$List = {
     /**
      * A next page token will be returned whenever the set of available results exceeds the current page size. The expiration period for this token is 15 minutes.
@@ -132,6 +223,13 @@ export type ZoomApi$Users$List$$User = {
      * 0 — The user's email not verified.
      */
     verified: number;
+};
+export type ZoomApi$Users$Create$User = {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    type: 1 | 2 | 4 | 99;
 };
 export type ZoomApi$PastMeeting$Participants$$Participant = {
     id: string;
