@@ -10,10 +10,14 @@ import {
     ZoomApi$PastMeeting$Participants,
     ZoomApi$Reports$Meetings,
     ZoomApi$Users$$Status,
+    ZoomApi$Users$Create$Action,
+    ZoomApi$Users$Create$User,
+    ZoomApi$Users$Create$UserInfo,
     ZoomApi$Users$Get,
     ZoomApi$Users$List,
     ZoomApi$ZAKToken,
     ZoomError,
+    ZoomSuccess,
     ZoomTokens,
 } from './types';
 import { ZoomClient } from './zoomClient';
@@ -60,6 +64,21 @@ export class ZoomApi {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
+            /** From: https://developers.zoom.us/docs/api/users/#tag/users/POST/users */
+            create(input: {
+                action: ZoomApi$Users$Create$Action;
+                user_info: ZoomApi$Users$Create$UserInfo;
+            }): Promise<ZoomApi$Users$Create$User> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/users`,
+                    method: 'POST',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(input),
+                }) as any;
+            },
             list(
                 params?: Partial<{
                     /**
@@ -100,15 +119,12 @@ export class ZoomApi {
         };
     }
 
-
     /** From: https://developers.zoom.us/docs/api/accounts/ */
     accounts() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
-            settings(
-                accountId: string,
-            ): Promise<ZoomApi$Users$Get> {
+            settings(accountId: string): Promise<ZoomApi$Users$Get> {
                 return self.client.request({
                     url: `${self.client.BASE_API_URL}/accounts/${accountId}/settings`,
                     method: 'GET',
@@ -297,6 +313,67 @@ export class ZoomApi {
                     },
                     { requestTimeoutMs: 60000 },
                 ) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/DELETE/meetings/{meetingId} */
+            delete(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The meeting occurrence ID.
+                     */
+                    occurrence_id: string;
+                    /**
+                     * Whether to send cancellation email to registrants.
+                     * Default: false
+                     */
+                    schedule_for_reminder: boolean;
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings/{recordingId} */
+            deleteRecording(
+                meetingId: string,
+                recordingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings/${recordingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings */
+            deleteAllRecordings(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
             },
         };
     }

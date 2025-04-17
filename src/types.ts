@@ -17,7 +17,7 @@ export type ZoomClientOptions = {
 };
 
 export type ZoomRequest = {
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH';
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     url: string;
     params?: Record<string, any>;
     body?: RequestInit['body'];
@@ -56,6 +56,28 @@ export type ZoomTokens = Partial<ZoomTokensResponse$Success> &
 export type ZoomApi$ZAKToken = { token: string };
 
 export type ZoomApi$Users$$Status = 'pending' | 'active' | 'inactive';
+
+export type ZoomApi$Users$Create$Action =
+    | 'create'
+    | 'autoCreate'
+    | 'custCreate'
+    | 'ssoCreate';
+
+export type ZoomApi$Users$Create$UserInfo = {
+    email: string; // required
+    first_name: string;
+    last_name: string;
+    display_name: string;
+    password: string;
+    /*
+    User type.
+    1 - Basic.
+    2 - Licensed.
+    4 - Unassigned without Meetings Basic.
+    99 - None. this can only be set with ssoCreate.
+    */
+    type: 1 | 2 | 4 | 99; // required
+};
 
 export type ZoomApi$Users$List = {
     /**
@@ -164,6 +186,14 @@ export type ZoomApi$Users$List$$User = {
      * 0 — The user's email not verified.
      */
     verified: number;
+};
+
+export type ZoomApi$Users$Create$User = {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    type: 1 | 2 | 4 | 99;
 };
 
 export type ZoomApi$PastMeeting$Participants$$Participant = {

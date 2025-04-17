@@ -168,3 +168,144 @@ it('meetings() recordings', async () => {
     ).toEqual(resp);
     scope.done();
 });
+
+it('meetings() deleteRecording', async () => {
+    const meetingId = 'randomId';
+    const recordingId = 'recordingId';
+    const params = {
+        action: 'trash',
+    };
+    const resp = { success: true };
+    const paramsStr = new URLSearchParams(params as any).toString();
+    const scope = nock(client.BASE_API_URL)
+        .delete(`/meetings/${meetingId}/recordings/${recordingId}?${paramsStr}`)
+        .reply(200, resp);
+    expect(
+        await zoomApi.meetings().deleteRecording(meetingId, recordingId, params as any),
+    ).toEqual(resp);
+    scope.done();
+});
+
+it('meetings() deleteAllRecordings', async () => {
+    const meetingId = 'randomId';
+    const params = {
+        action: 'delete',
+    };
+    const resp = { success: true };
+    const paramsStr = new URLSearchParams(params as any).toString();
+    const scope = nock(client.BASE_API_URL)
+        .delete(`/meetings/${meetingId}/recordings?${paramsStr}`)
+        .reply(200, resp);
+    expect(
+        await zoomApi.meetings().deleteAllRecordings(meetingId, params as any),
+    ).toEqual(resp);
+    scope.done();
+});
+
+it('users() create', async () => {
+    const input = {
+        action: 'create',
+        user_info: {
+            email: 'test@example.com',
+            first_name: 'Test',
+            last_name: 'User',
+            type: 1,
+        },
+    };
+    const resp = {
+        id: 'userId',
+        email: 'test@example.com',
+        first_name: 'Test',
+        last_name: 'User',
+        type: 1,
+    };
+    const scope = nock(client.BASE_API_URL)
+        .post('/users', input)
+        .reply(201, resp);
+    expect(await zoomApi.users().create(input as any)).toEqual(resp);
+    scope.done();
+});
+
+it('accounts() settings', async () => {
+    const accountId = 'accountId';
+    const resp = {
+        id: 'settingsId',
+        settings: {
+            option1: true,
+            option2: false,
+        },
+    };
+    const scope = nock(client.BASE_API_URL)
+        .get(`/accounts/${accountId}/settings`)
+        .reply(200, resp);
+    expect(await zoomApi.accounts().settings(accountId)).toEqual(resp);
+    scope.done();
+});
+
+it('meetings() update', async () => {
+    const meetingId = 'meetingId';
+    const params = {
+        topic: 'Updated Meeting Topic',
+        duration: 60,
+    };
+    const resp = {
+        id: meetingId,
+        topic: 'Updated Meeting Topic',
+        duration: 60,
+    };
+    const scope = nock(client.BASE_API_URL)
+        .patch(`/meetings/${meetingId}`, params)
+        .reply(200, resp);
+    expect(await zoomApi.meetings().update(meetingId, params as any)).toEqual(resp);
+    scope.done();
+});
+
+it('meetings() transcript', async () => {
+    const transcriptUrl = 'https://example.com/transcript.vtt';
+    const resp = 'WEBVTT\n\n00:00:00.000 --> 00:00:05.000\nHello, this is a test transcript.';
+    const scope = nock('https://example.com')
+        .get('/transcript.vtt')
+        .reply(200, resp);
+    expect(await zoomApi.meetings().transcript(transcriptUrl)).toEqual(resp);
+    scope.done();
+});
+
+it('setTokens', () => {
+    const newTokens = { access_token: 'new-token', refresh_token: 'new-refresh' };
+    zoomApi.setTokens(newTokens);
+    expect(zoomApi.tokens).toEqual(newTokens);
+});
+
+it('getAuthHeader throws error when access_token is not found', () => {
+    const apiWithoutToken = new ZoomApi({ client, tokens: {} });
+    expect(() => {
+        // @ts-ignore - Accessing private method for testing
+        apiWithoutToken.getAuthHeader();
+    }).toThrow('access_token not found');
+});
+
+it('constructor with tokens parameter', () => {
+    const tokens = { access_token: 'test-token', refresh_token: 'test-refresh' };
+    const api = new ZoomApi({ client, tokens });
+    expect(api.tokens).toEqual(tokens);
+});
+
+it('constructor with empty tokens parameter', () => {
+    const api = new ZoomApi({ client, tokens: {} });
+    expect(api.tokens).toEqual({});
+});
+
+it('meetings() delete', async () => {
+    const meetingId = 'meetingId';
+    const params = {
+        occurrence_id: 'occurrenceId',
+        schedule_for_reminder: true,
+    };
+    const resp = { success: true };
+    const paramsStr = new URLSearchParams(params as any).toString();
+    const scope = nock(client.BASE_API_URL)
+        .delete(`/meetings/${meetingId}?${paramsStr}`)
+        .reply(200, resp);
+    expect(await zoomApi.meetings().delete(meetingId, params as any)).toEqual(resp);
+    scope.done();
+});
