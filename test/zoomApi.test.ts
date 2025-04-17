@@ -309,3 +309,91 @@ it('meetings() delete', async () => {
     expect(await zoomApi.meetings().delete(meetingId, params as any)).toEqual(resp);
     scope.done();
 });
+
+it('groups() list', async () => {
+    const params = {
+        page_size: 30,
+        page_number: 1,
+    };
+    const resp = {
+        next_page_token: '',
+        page_count: 1,
+        page_number: 1,
+        page_size: 30,
+        total_records: 2,
+        groups: [
+            {
+                id: 'groupId1',
+                name: 'Group 1',
+                total_members: 5,
+            },
+            {
+                id: 'groupId2',
+                name: 'Group 2',
+                total_members: 10,
+            },
+        ],
+    };
+    const paramsStr = new URLSearchParams(params as any).toString();
+    const scope = nock(client.BASE_API_URL)
+        .get(`/groups?${paramsStr}`)
+        .reply(200, resp);
+    expect(await zoomApi.groups().list(params)).toEqual(resp);
+    scope.done();
+});
+
+it('groups() get', async () => {
+    const groupId = 'groupId1';
+    const resp = {
+        id: groupId,
+        name: 'Group 1',
+        total_members: 5,
+    };
+    const scope = nock(client.BASE_API_URL)
+        .get(`/groups/${groupId}`)
+        .reply(200, resp);
+    expect(await zoomApi.groups().get(groupId)).toEqual(resp);
+    scope.done();
+});
+
+it('groups() addMembers', async () => {
+    const groupId = 'groupId1';
+    const members = {
+        members: [
+            {
+                email: 'user1@example.com',
+            },
+            {
+                email: 'user2@example.com',
+            },
+        ],
+    };
+    const resp = {
+        added_members: [
+            {
+                id: 'userId1',
+                email: 'user1@example.com',
+            },
+            {
+                id: 'userId2',
+                email: 'user2@example.com',
+            },
+        ],
+    };
+    const scope = nock(client.BASE_API_URL)
+        .post(`/groups/${groupId}/members`, members)
+        .reply(200, resp);
+    expect(await zoomApi.groups().addMembers(groupId, members)).toEqual(resp);
+    scope.done();
+});
+
+it('groups() removeMember', async () => {
+    const groupId = 'groupId1';
+    const memberId = 'userId1';
+    const resp = { success: true };
+    const scope = nock(client.BASE_API_URL)
+        .delete(`/groups/${groupId}/members/${memberId}`)
+        .reply(200, resp);
+    expect(await zoomApi.groups().removeMember(groupId, memberId)).toEqual(resp);
+    scope.done();
+});

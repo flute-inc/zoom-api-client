@@ -1,4 +1,8 @@
 import {
+    ZoomApi$Groups$AddMembers$Request,
+    ZoomApi$Groups$AddMembers$Response,
+    ZoomApi$Groups$Get,
+    ZoomApi$Groups$List,
     ZoomApi$Meetings$Create$Request,
     ZoomApi$Meetings$Create$Response,
     ZoomApi$Meetings$Get,
@@ -57,6 +61,83 @@ export class ZoomApi {
     /** From: https://marketplace.zoom.us/docs/guides/auth/oauth/#using-an-access-token */
     me(): Promise<ZoomApi$Users$Get> {
         return this.users().get('me');
+    }
+
+    /** From: https://developers.zoom.us/docs/api/users/#tag/groups */
+    groups() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return {
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/GET/groups */
+            list(
+                params?: Partial<{
+                    page_size: number;
+                    page_number: number;
+                    next_page_token: string;
+                }>,
+            ): Promise<ZoomApi$Groups$List> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups`,
+                    method: 'GET',
+                    headers: self.getAuthHeader(),
+                    params: {
+                        page_size: 30,
+                        ...params,
+                    },
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/GET/groups/{groupId} */
+            get(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+            ): Promise<ZoomApi$Groups$Get> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}`,
+                    method: 'GET',
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/POST/groups/{groupId}/members */
+            addMembers(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+                /**
+                 * List of members to add to the group.
+                 */
+                members: ZoomApi$Groups$AddMembers$Request,
+            ): Promise<ZoomApi$Groups$AddMembers$Response> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}/members`,
+                    method: 'POST',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(members),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/DELETE/groups/{groupId}/members/{memberId} */
+            removeMember(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+                /**
+                 * The member ID.
+                 */
+                memberId: string,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}/members/${memberId}`,
+                    method: 'DELETE',
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+        };
     }
 
     /** From: https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/users */

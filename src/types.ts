@@ -55,6 +55,93 @@ export type ZoomTokens = Partial<ZoomTokensResponse$Success> &
 
 export type ZoomApi$ZAKToken = { token: string };
 
+export type ZoomApi$Groups$List = {
+    /**
+     * A next page token will be returned whenever the set of available results exceeds the current page size. The expiration period for this token is 15 minutes.
+     */
+    next_page_token: string;
+    page_count: number;
+    page_number: number;
+    page_size: number;
+    total_records: number;
+    groups: ZoomApi$Groups$List$$Group[];
+};
+
+export type ZoomApi$Groups$List$$Group = {
+    /**
+     * Group ID.
+     */
+    id: string;
+    /**
+     * Group name.
+     */
+    name: string;
+    /**
+     * Total number of members in this group.
+     */
+    total_members?: number;
+};
+
+export type ZoomApi$Groups$Get = {
+    /**
+     * Group ID.
+     */
+    id: string;
+    /**
+     * Group name.
+     */
+    name: string;
+    /**
+     * Total number of members in this group.
+     */
+    total_members?: number;
+};
+
+export type ZoomApi$Groups$AddMembers$Request = {
+    /**
+     * List of Group members.
+     */
+    members: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id?: string;
+    }[];
+};
+
+export type ZoomApi$Groups$AddMembers$Response = {
+    /**
+     * List of members that were added to the group.
+     */
+    added_members: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id: string;
+    }[];
+    /**
+     * List of members that were not added to the group.
+     */
+    not_added_members?: {
+        /**
+         * User email.
+         */
+        email: string;
+        /**
+         * User ID.
+         */
+        id?: string;
+    }[];
+};
+
 export type ZoomApi$Users$$Status = 'pending' | 'active' | 'inactive';
 
 export type ZoomApi$Users$Create$Action =
