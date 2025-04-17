@@ -17,6 +17,7 @@ import {
     ZoomApi$Users$List,
     ZoomApi$ZAKToken,
     ZoomError,
+    ZoomSuccess,
     ZoomTokens,
 } from './types';
 import { ZoomClient } from './zoomClient';
@@ -312,6 +313,67 @@ export class ZoomApi {
                     },
                     { requestTimeoutMs: 60000 },
                 ) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/DELETE/meetings/{meetingId} */
+            delete(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The meeting occurrence ID.
+                     */
+                    occurrence_id: string;
+                    /**
+                     * Whether to send cancellation email to registrants.
+                     * Default: false
+                     */
+                    schedule_for_reminder: boolean;
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings/{recordingId} */
+            deleteRecording(
+                meetingId: string,
+                recordingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings/${recordingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings */
+            deleteAllRecordings(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
             },
         };
     }

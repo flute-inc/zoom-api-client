@@ -17,7 +17,7 @@ export type ZoomClientOptions = {
 };
 
 export type ZoomRequest = {
-    method: 'GET' | 'POST' | 'PUT' | 'PATCH';
+    method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
     url: string;
     params?: Record<string, any>;
     body?: RequestInit['body'];

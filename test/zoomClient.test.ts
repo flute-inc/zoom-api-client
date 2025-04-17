@@ -128,3 +128,74 @@ test('url with param', async () => {
     expect(data).toEqual(resp);
     scope.done();
 });
+
+test('normalizeUrl with /v2 path', async () => {
+    const resp = { hello: 'world' };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/test')
+        .reply(200, resp);
+    const data = await client.request({
+        method: 'GET',
+        url: '/v2/test',
+    });
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('callApi with string error', async () => {
+    const errorMessage = 'plain text error';
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/error')
+        .reply(400, errorMessage, { 'Content-Type': 'text/plain' });
+    await expect(
+        client.request({ method: 'GET', url: '/v2/error' }),
+    ).rejects.toThrowError(errorMessage);
+    scope.done();
+});
+
+test('callApi with non-parseable JSON response', async () => {
+    const response = 'not a json';
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/text')
+        .reply(200, response, { 'Content-Type': 'text/plain' });
+    const result = await client.request({ method: 'GET', url: '/v2/text' });
+    expect(result).toEqual(response);
+    scope.done();
+});
+
+test('callApi with abort controller', async () => {
+    jest.useFakeTimers();
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/timeout')
+        .delayConnection(10000) // Delay longer than the timeout
+        .reply(200, {});
+    
+    const promise = client.request(
+        { method: 'GET', url: '/v2/timeout' },
+        { requestTimeoutMs: 1 } // Very short timeout
+    );
+    
+    jest.advanceTimersByTime(5); // Advance past the timeout
+    
+    await expect(promise).rejects.toThrow();
+    jest.useRealTimers();
+    scope.done();
+});
+
+test('normalizeUrl with absolute URL', () => {
+    const absoluteUrl = 'https://example.com/api';
+    expect(client.request(absoluteUrl)).resolves.toEqual(expect.anything());
+});
+
+test('should initialize ZoomClient correctly', () => {
+    const testClient = new ZoomClient({
+        clientId,
+        clientSecret,
+        redirectUri,
+    });
+    
+    expect(testClient.clientId).toBe(clientId);
+    expect(testClient.clientSecret).toBe(clientSecret);
+    expect(testClient.redirectUri).toBe(redirectUri);
+    expect(testClient.emitter).toBeDefined();
+});
