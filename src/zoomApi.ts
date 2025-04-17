@@ -1,4 +1,8 @@
 import {
+    ZoomApi$Groups$AddMembers$Request,
+    ZoomApi$Groups$AddMembers$Response,
+    ZoomApi$Groups$Get,
+    ZoomApi$Groups$List,
     ZoomApi$Meetings$Create$Request,
     ZoomApi$Meetings$Create$Response,
     ZoomApi$Meetings$Get,
@@ -10,10 +14,14 @@ import {
     ZoomApi$PastMeeting$Participants,
     ZoomApi$Reports$Meetings,
     ZoomApi$Users$$Status,
+    ZoomApi$Users$Create$Action,
+    ZoomApi$Users$Create$User,
+    ZoomApi$Users$Create$UserInfo,
     ZoomApi$Users$Get,
     ZoomApi$Users$List,
     ZoomApi$ZAKToken,
     ZoomError,
+    ZoomSuccess,
     ZoomTokens,
 } from './types';
 import { ZoomClient } from './zoomClient';
@@ -55,11 +63,103 @@ export class ZoomApi {
         return this.users().get('me');
     }
 
+    /** From: https://developers.zoom.us/docs/api/users/#tag/groups */
+    groups() {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+        return {
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/GET/groups */
+            list(
+                params?: Partial<{
+                    page_size: number;
+                    page_number: number;
+                    next_page_token: string;
+                }>,
+            ): Promise<ZoomApi$Groups$List> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups`,
+                    method: 'GET',
+                    headers: self.getAuthHeader(),
+                    params: {
+                        page_size: 30,
+                        ...params,
+                    },
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/GET/groups/{groupId} */
+            get(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+            ): Promise<ZoomApi$Groups$Get> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}`,
+                    method: 'GET',
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/POST/groups/{groupId}/members */
+            addMembers(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+                /**
+                 * List of members to add to the group.
+                 */
+                members: ZoomApi$Groups$AddMembers$Request,
+            ): Promise<ZoomApi$Groups$AddMembers$Response> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}/members`,
+                    method: 'POST',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(members),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/users/#tag/groups/DELETE/groups/{groupId}/members/{memberId} */
+            removeMember(
+                /**
+                 * The group ID.
+                 */
+                groupId: string,
+                /**
+                 * The member ID.
+                 */
+                memberId: string,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/groups/${groupId}/members/${memberId}`,
+                    method: 'DELETE',
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+        };
+    }
+
     /** From: https://marketplace.zoom.us/docs/api-reference/zoom-api/methods/#operation/users */
     users() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
+            /** From: https://developers.zoom.us/docs/api/users/#tag/users/POST/users */
+            create(input: {
+                action: ZoomApi$Users$Create$Action;
+                user_info: ZoomApi$Users$Create$UserInfo;
+            }): Promise<ZoomApi$Users$Create$User> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/users`,
+                    method: 'POST',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(input),
+                }) as any;
+            },
             list(
                 params?: Partial<{
                     /**
@@ -100,15 +200,12 @@ export class ZoomApi {
         };
     }
 
-
     /** From: https://developers.zoom.us/docs/api/accounts/ */
     accounts() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
-            settings(
-                accountId: string,
-            ): Promise<ZoomApi$Users$Get> {
+            settings(accountId: string): Promise<ZoomApi$Users$Get> {
                 return self.client.request({
                     url: `${self.client.BASE_API_URL}/accounts/${accountId}/settings`,
                     method: 'GET',
@@ -297,6 +394,67 @@ export class ZoomApi {
                     },
                     { requestTimeoutMs: 60000 },
                 ) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/meetings/DELETE/meetings/{meetingId} */
+            delete(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The meeting occurrence ID.
+                     */
+                    occurrence_id: string;
+                    /**
+                     * Whether to send cancellation email to registrants.
+                     * Default: false
+                     */
+                    schedule_for_reminder: boolean;
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings/{recordingId} */
+            deleteRecording(
+                meetingId: string,
+                recordingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings/${recordingId}`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
+            },
+            /** From: https://developers.zoom.us/docs/api/meetings/#tag/cloud-recording/DELETE/meetings/{meetingId}/recordings */
+            deleteAllRecordings(
+                meetingId: string,
+                params?: Partial<{
+                    /**
+                     * The recording delete action.
+                     * `trash` - Move recording to trash.
+                     * `delete` - Delete recording permanently.
+                     */
+                    action: 'trash' | 'delete';
+                }>,
+            ): Promise<ZoomSuccess> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/meetings/${meetingId}/recordings`,
+                    method: 'DELETE',
+                    params: { ...params },
+                    headers: self.getAuthHeader(),
+                }) as any;
             },
         };
     }

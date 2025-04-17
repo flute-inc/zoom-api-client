@@ -126,3 +126,45 @@ test('verifyEvent:  with verification key provided', async () => {
         payload.client_id === clientId;
     expect(oauth.verifyEvent(event)).toEqual(result);
 });
+
+test('verifyEvent: with matching verification key but different client_id', async () => {
+    const headers = { authorization: verificationKey };
+    const payload = { client_id: 'different-client-id', signature: 'random' };
+    const event = {
+        body: {
+            payload,
+            event: 'randomid',
+        },
+        headers,
+    };
+
+    expect(oauth.verifyEvent(event)).toEqual(false);
+});
+
+test('verifyEvent: with matching client_id but different verification key', async () => {
+    const headers = { authorization: 'different-verification-key' };
+    const payload = { client_id: clientId, signature: 'random' };
+    const event = {
+        body: {
+            payload,
+            event: 'randomid',
+        },
+        headers,
+    };
+
+    expect(oauth.verifyEvent(event)).toEqual(false);
+});
+
+test('verifyEvent: with both matching verification key and client_id', async () => {
+    const headers = { authorization: verificationKey };
+    const payload = { client_id: clientId, signature: 'random' };
+    const event = {
+        body: {
+            payload,
+            event: 'randomid',
+        },
+        headers,
+    };
+
+    expect(oauth.verifyEvent(event)).toEqual(true);
+});

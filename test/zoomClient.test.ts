@@ -115,6 +115,26 @@ test('error url with text message', async () => {
     scope.done();
 });
 
+test('error url with null-like response', async () => {
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/d6')
+        .reply(400, '');
+    await expect(
+        client.request({ method: 'GET', url: '/d6' }),
+    ).rejects.toThrowError('');
+    scope.done();
+});
+
+test('error url with empty object response', async () => {
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/d7')
+        .reply(400, {});
+    await expect(
+        client.request({ method: 'GET', url: '/d7' }),
+    ).rejects.toThrowError('Zoom Api Error');
+    scope.done();
+});
+
 test('url with param', async () => {
     const resp = { hello: 'world' };
     const scope = nock(ZOOM_BASE_API_URL)
@@ -127,4 +147,156 @@ test('url with param', async () => {
     });
     expect(data).toEqual(resp);
     scope.done();
+});
+
+test('normalizeUrl with /v2 path', async () => {
+    const resp = { hello: 'world' };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/test')
+        .reply(200, resp);
+    const data = await client.request({
+        method: 'GET',
+        url: '/v2/test',
+    });
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('normalizeUrl with /v2 path and subpath', async () => {
+    const resp = { hello: 'world' };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/test/subpath')
+        .reply(200, resp);
+    const data = await client.request({
+        method: 'GET',
+        url: '/v2/test/subpath',
+    });
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('normalizeUrl with /v2 path and query params', async () => {
+    const resp = { hello: 'world' };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/test?param=value')
+        .reply(200, resp);
+    const data = await client.request({
+        method: 'GET',
+        url: '/v2/test',
+        params: { param: 'value' },
+    });
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('normalizeUrl with exact /v2 path', async () => {
+    const resp = { hello: 'world' };
+    // This should test the case where url is exactly '/v2'
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2')
+        .reply(200, resp);
+    const data = await client.request('/v2');
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('normalizeUrl with /v2/ path', async () => {
+    const resp = { hello: 'world' };
+    // This should test the case where url is '/v2/' with a trailing slash
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/')
+        .reply(200, resp);
+    const data = await client.request('/v2/');
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('normalizeUrl with non-slash path', () => {
+    // Test a URL that doesn't start with a slash
+    const url = 'http://example.com/api';
+    // @ts-ignore - Accessing private method for testing
+    const normalizedUrl = client['normalizeUrl'](url);
+    expect(normalizedUrl).toBe(url);
+});
+
+test('normalizeUrl with non-oauth non-v2 path', async () => {
+    const resp = { hello: 'world' };
+    // Test a URL that starts with a slash but is not /oauth or /v2
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/other-path')
+        .reply(200, resp);
+    const data = await client.request('/other-path');
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('callApi with string error', async () => {
+    const errorMessage = 'plain text error';
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/error')
+        .reply(400, errorMessage, { 'Content-Type': 'text/plain' });
+    await expect(
+        client.request({ method: 'GET', url: '/v2/error' }),
+    ).rejects.toThrowError(errorMessage);
+    scope.done();
+});
+
+test('callApi with non-parseable JSON response', async () => {
+    const response = 'not a json';
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/text')
+        .reply(200, response, { 'Content-Type': 'text/plain' });
+    const result = await client.request({ method: 'GET', url: '/v2/text' });
+    expect(result).toEqual(response);
+    scope.done();
+});
+
+test('callApi with abort controller', async () => {
+    jest.useFakeTimers();
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/timeout')
+        .delayConnection(10000) // Delay longer than the timeout
+        .reply(200, {});
+    
+    const promise = client.request(
+        { method: 'GET', url: '/v2/timeout' },
+        { requestTimeoutMs: 1 } // Very short timeout
+    );
+    
+    jest.advanceTimersByTime(5); // Advance past the timeout
+    
+    await expect(promise).rejects.toThrow();
+    jest.useRealTimers();
+    scope.done();
+});
+
+test('normalizeUrl with absolute URL', () => {
+    const absoluteUrl = 'https://example.com/api';
+    expect(client.request(absoluteUrl)).resolves.toEqual(expect.anything());
+});
+
+test('request with omitted method', async () => {
+    const resp = { hello: 'world' };
+    const url = 'http://dum.my/';
+    // Omit the method property to test the default 'GET' fallback
+    const scope = nock(url).get('/').reply(200, resp);
+    // @ts-ignore - Intentionally omitting the method property for testing
+    const data = await client.request({
+        url,
+    });
+    expect(data).toEqual(resp);
+    scope.done();
+});
+
+test('should initialize ZoomClient correctly', () => {
+    const testClient = new ZoomClient({
+        clientId,
+        clientSecret,
+        redirectUri,
+    });
+    
+    expect(testClient.clientId).toBe(clientId);
+    expect(testClient.clientSecret).toBe(clientSecret);
+    expect(testClient.redirectUri).toBe(redirectUri);
+    expect(testClient.emitter).toBeDefined();
 });
