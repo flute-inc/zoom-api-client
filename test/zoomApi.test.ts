@@ -284,6 +284,22 @@ it('getAuthHeader throws error when access_token is not found', () => {
     }).toThrow('access_token not found');
 });
 
+it('getAuthHeader returns authorization header when access_token is found', () => {
+    const accessToken = 'test-access-token';
+    const api = new ZoomApi({ client, tokens: { access_token: accessToken } });
+    // @ts-ignore - Accessing private method for testing
+    const authHeader = api.getAuthHeader();
+    expect(authHeader).toEqual({ Authorization: `Bearer ${accessToken}` });
+});
+
+it('getAuthHeader handles undefined tokens', () => {
+    const api = new ZoomApi({ client, tokens: undefined as any });
+    expect(() => {
+        // @ts-ignore - Accessing private method for testing
+        api.getAuthHeader();
+    }).toThrow('access_token not found');
+});
+
 it('constructor with tokens parameter', () => {
     const tokens = { access_token: 'test-token', refresh_token: 'test-refresh' };
     const api = new ZoomApi({ client, tokens });
