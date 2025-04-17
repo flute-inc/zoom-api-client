@@ -1,6 +1,6 @@
 {
-  "name": "@nektarai/zoom-api-client",
-  "version": "0.0.4",
+  "name": "@flute-inc/zoom-api-client",
+  "version": "0.1.0",
   "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
@@ -20,7 +20,7 @@
   "engines": {
     "node": ">=18"
   },
-  "homepage": "https://github.com/nektarai/zoom-api-client#readme",
+  "homepage": "https://github.com/flute-inc/zoom-api-client#readme",
   "devDependencies": {
     "@swc/core": "^1.11.21",
     "@swc/jest": "^0.2.26",
