@@ -1,13 +1,13 @@
 # Zoom API Client
 
-This node package aims to provide a dependency-free and 100% typed and tested Zoom Api Client. We use it in production at [Nektar.ai](http://nektar.ai).
+This node package aims to provide a dependency-free and 100% typed and tested Zoom Api Client.
 
 The code is heavily inspired by GoogleApis package.
 
 ## Installation
 
 ```sh
-npm install @nektarai/zoom-api-client
+npm install @flute-inc/zoom-api-client
 ```
 
 ## Usage
@@ -20,7 +20,7 @@ This is the core provider of all authentication and requests for Zoom.
 It is recommended to create only one `ZoomClient` instance for all Oauth (non-S2SO) purposes.
 
 ```js
-import {ZoomClient} from '@nektarai/zoom-api-client';
+import {ZoomClient} from '@flute-inc/zoom-api-client';
 
 const zoomClient = new ZoomClient({
     clientId: process.env.ZOOM_CLIENT_ID,
@@ -35,7 +35,7 @@ const zoomClient = new ZoomClient({
 To use the Zoom's Oauth functionality
 
 ```js
-import {ZoomS2SO} from '@nektarai/zoom-api-client';
+import {ZoomS2SO} from '@flute-inc/zoom-api-client';
 
 const zoomOauth = new ZoomOauth(zoomClient);
 
@@ -50,7 +50,7 @@ expressRouter.get('/zoom/oauth', (req, res) => {
 To use Zoom's Server-to-server oauth functionality
 
 ```js
-import {ZoomClient, ZoomS2SO} from '@nektarai/zoom-api-client';
+import {ZoomClient, ZoomS2SO} from '@flute-inc/zoom-api-client';
 
 const zoomClient = new ZoomClient({
   // S2SO credentials
@@ -63,7 +63,7 @@ const zoomS2so = new ZoomS2SO(zoomClient);
 To use Zoom Api's after authentication
 
 ```js
-import {ZoomApi} from '@nektarai/zoom-api-client';
+import {ZoomApi} from '@flute-inc/zoom-api-client';
 
 ...
 
