@@ -10,6 +10,9 @@ import {
     ZoomApi$PastMeeting$Participants,
     ZoomApi$Reports$Meetings,
     ZoomApi$Users$$Status,
+    ZoomApi$Users$Create$Action,
+    ZoomApi$Users$Create$User,
+    ZoomApi$Users$Create$UserInfo,
     ZoomApi$Users$Get,
     ZoomApi$Users$List,
     ZoomApi$ZAKToken,
@@ -60,6 +63,21 @@ export class ZoomApi {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
+            /** From: https://developers.zoom.us/docs/api/users/#tag/users/POST/users */
+            create(input: {
+                action: ZoomApi$Users$Create$Action;
+                user_info: ZoomApi$Users$Create$UserInfo;
+            }): Promise<ZoomApi$Users$Create$User> {
+                return self.client.request({
+                    url: `${self.client.BASE_API_URL}/users`,
+                    method: 'POST',
+                    headers: {
+                        ...self.getAuthHeader(),
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(input),
+                }) as any;
+            },
             list(
                 params?: Partial<{
                     /**
@@ -100,15 +118,12 @@ export class ZoomApi {
         };
     }
 
-
     /** From: https://developers.zoom.us/docs/api/accounts/ */
     accounts() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this;
         return {
-            settings(
-                accountId: string,
-            ): Promise<ZoomApi$Users$Get> {
+            settings(accountId: string): Promise<ZoomApi$Users$Get> {
                 return self.client.request({
                     url: `${self.client.BASE_API_URL}/accounts/${accountId}/settings`,
                     method: 'GET',
