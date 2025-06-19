@@ -127,10 +127,10 @@ export type ZoomApi$Users$$Status = 'pending' | 'active' | 'inactive';
 export type ZoomApi$Users$Create$Action = 'create' | 'autoCreate' | 'custCreate' | 'ssoCreate';
 export type ZoomApi$Users$Create$UserInfo = {
     email: string;
-    first_name: string;
-    last_name: string;
-    display_name: string;
-    password: string;
+    first_name?: string;
+    last_name?: string;
+    display_name?: string;
+    password?: string;
     type: 1 | 2 | 4 | 99;
 };
 export type ZoomApi$Users$List = {
