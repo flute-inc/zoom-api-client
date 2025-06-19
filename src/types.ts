@@ -152,10 +152,10 @@ export type ZoomApi$Users$Create$Action =
 
 export type ZoomApi$Users$Create$UserInfo = {
     email: string; // required
-    first_name: string;
-    last_name: string;
-    display_name: string;
-    password: string;
+    first_name?: string;
+    last_name?: string;
+    display_name?: string;
+    password?: string;
     /*
     User type.
     1 - Basic.
