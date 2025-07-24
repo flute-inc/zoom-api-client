@@ -5,6 +5,8 @@ import {
     ZoomClientOptions,
     ZoomRequestOptions,
     ZoomResponse,
+    ZoomError,
+    ZoomErrorDetails,
 } from './types';
 
 export class ZoomClient {
@@ -69,9 +71,57 @@ export class ZoomClient {
             }
 
             if (!res.ok) {
-                if (typeof result == 'string') throw new Error(result);
-                else throw new Error(result?.message || 'Zoom Api Error');
+                // より詳細なエラー情報を構築
+                let errorMessage = 'Zoom Api Error';
+                let errorDetails: ZoomErrorDetails = {
+                    status: res.status,
+                    statusText: res.statusText,
+                    url: request.url,
+                    method: request.method || 'GET'
+                };
+
+                // レスポンスボディからエラー情報を抽出
+                if (typeof result === 'object' && result !== null) {
+                    if (result.error) {
+                        errorMessage = result.error;
+                    }
+                    if (result.message) {
+                        errorMessage = `${errorMessage}: ${result.message}`;
+                    }
+                    if (result.reason) {
+                        errorMessage = `${errorMessage} (${result.reason})`;
+                    }
+                    errorDetails.responseBody = result;
+                } else if (typeof result === 'string') {
+                    errorMessage = result;
+                    errorDetails.responseBody = result;
+                }
+
+                throw new ZoomError(errorMessage, errorDetails);
             }
+        } catch (error: any) {
+            // ネットワークエラーやタイムアウトエラーの場合
+            if (error.name === 'AbortError') {
+                const errorDetails: ZoomErrorDetails = {
+                    url: request.url,
+                    method: request.method || 'GET',
+                    timeout: options.requestTimeoutMs || 5000
+                };
+                throw new ZoomError(`Zoom API request timed out after ${options.requestTimeoutMs || 5000}ms`, errorDetails);
+            }
+            
+            // 既に詳細情報が含まれているエラーの場合はそのまま再スロー
+            if (error.details) {
+                throw error;
+            }
+            
+            // その他のエラーの場合
+            const errorDetails: ZoomErrorDetails = {
+                url: request.url,
+                method: request.method || 'GET',
+                originalError: error.message
+            };
+            throw new ZoomError(`Zoom API request failed: ${error.message}`, errorDetails);
         } finally {
             clearTimeout(timeout);
         }

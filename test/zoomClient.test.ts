@@ -135,6 +135,75 @@ test('error url with empty object response', async () => {
     scope.done();
 });
 
+test('error with detailed information', async () => {
+    const errorResponse = {
+        error: 'invalid_grant',
+        message: 'The refresh token is invalid or expired',
+        reason: 'token_expired'
+    };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/detailed-error')
+        .reply(400, errorResponse);
+    
+    try {
+        await client.request({ method: 'GET', url: '/detailed-error' });
+    } catch (error: any) {
+        expect(error.message).toBe('invalid_grant: The refresh token is invalid or expired (token_expired)');
+        expect(error.details).toBeDefined();
+        expect(error.details.status).toBe(400);
+        expect(error.details.statusText).toBe('Bad Request');
+        expect(error.details.url).toBe('https://api.zoom.us/v2/detailed-error');
+        expect(error.details.method).toBe('GET');
+        expect(error.details.responseBody).toEqual(errorResponse);
+    }
+    scope.done();
+});
+
+test('error with only error field', async () => {
+    const errorResponse = {
+        error: 'unauthorized'
+    };
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/unauthorized')
+        .reply(401, errorResponse);
+    
+    try {
+        await client.request({ method: 'GET', url: '/unauthorized' });
+    } catch (error: any) {
+        expect(error.message).toBe('unauthorized');
+        expect(error.details.status).toBe(401);
+        expect(error.details.responseBody).toEqual(errorResponse);
+    }
+    scope.done();
+});
+
+test('timeout error with details', async () => {
+    jest.useFakeTimers();
+    const scope = nock(ZOOM_BASE_API_URL)
+        .get('/v2/timeout-detail')
+        .delayConnection(10000)
+        .reply(200, {});
+    
+    const promise = client.request(
+        { method: 'GET', url: '/timeout-detail' },
+        { requestTimeoutMs: 100 }
+    );
+    
+    jest.advanceTimersByTime(200);
+    
+    try {
+        await promise;
+    } catch (error: any) {
+        expect(error.message).toContain('Zoom API request timed out after 100ms');
+        expect(error.details.timeout).toBe(100);
+        expect(error.details.url).toBe('https://api.zoom.us/v2/timeout-detail');
+        expect(error.details.method).toBe('GET');
+    }
+    
+    jest.useRealTimers();
+    scope.done();
+});
+
 test('url with param', async () => {
     const resp = { hello: 'world' };
     const scope = nock(ZOOM_BASE_API_URL)

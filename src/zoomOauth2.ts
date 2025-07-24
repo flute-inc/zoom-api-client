@@ -46,38 +46,86 @@ export class ZoomOauth {
 
     /* From: https://marketplace.zoom.us/docs/guides/auth/oauth#step-2-request-access-token */
     async requestTokens(code: string): Promise<ZoomTokensResponse> {
-        const body = this.client.constructParams({
-            grant_type: 'authorization_code',
-            redirect_uri: this.client.redirectUri,
-            code,
-        });
-        return this.client.request({
-            body,
-            ...this.withOAuthTokenRequest('token'),
-        }) as any;
+        try {
+            const body = this.client.constructParams({
+                grant_type: 'authorization_code',
+                redirect_uri: this.client.redirectUri,
+                code,
+            });
+            return await this.client.request({
+                body,
+                ...this.withOAuthTokenRequest('token'),
+            }) as any;
+        } catch (error: any) {
+            // エラーにコンテキスト情報を追加
+            if (error instanceof ZoomError) {
+                const enhancedError = new ZoomError(
+                    `Failed to request Zoom tokens: ${error.message}`,
+                    {
+                        ...error.details,
+                        code: code ? `${code.substring(0, 10)}...` : 'undefined',
+                        operation: 'request_tokens'
+                    }
+                );
+                throw enhancedError;
+            }
+            throw error;
+        }
     }
 
     /* From: https://marketplace.zoom.us/docs/guides/auth/oauth/#refreshing-an-access-token */
-    refreshTokens(refreshToken: string): Promise<ZoomTokensResponse> {
-        const body = this.client.constructParams({
-            grant_type: 'refresh_token',
-            refresh_token: refreshToken,
-        });
-        return this.client.request({
-            body,
-            ...this.withOAuthTokenRequest('token'),
-        }) as any;
+    async refreshTokens(refreshToken: string): Promise<ZoomTokensResponse> {
+        try {
+            const body = this.client.constructParams({
+                grant_type: 'refresh_token',
+                refresh_token: refreshToken,
+            });
+            return await this.client.request({
+                body,
+                ...this.withOAuthTokenRequest('token'),
+            }) as any;
+        } catch (error: any) {
+            // エラーにコンテキスト情報を追加
+            if (error instanceof ZoomError) {
+                const enhancedError = new ZoomError(
+                    `Failed to refresh Zoom tokens: ${error.message}`,
+                    {
+                        ...error.details,
+                        refreshToken: refreshToken ? `${refreshToken.substring(0, 10)}...` : 'undefined',
+                        operation: 'refresh_tokens'
+                    }
+                );
+                throw enhancedError;
+            }
+            throw error;
+        }
     }
 
     /* From: https://marketplace.zoom.us/docs/guides/auth/oauth/#revoking-an-access-token */
-    revokeTokens(accessToken: string): Promise<ZoomSuccess> {
-        const body = this.client.constructParams({
-            token: accessToken,
-        });
-        return this.client.request({
-            body,
-            ...this.withOAuthTokenRequest('revoke'),
-        }) as any;
+    async revokeTokens(accessToken: string): Promise<ZoomSuccess> {
+        try {
+            const body = this.client.constructParams({
+                token: accessToken,
+            });
+            return await this.client.request({
+                body,
+                ...this.withOAuthTokenRequest('revoke'),
+            }) as any;
+        } catch (error: any) {
+            // エラーにコンテキスト情報を追加
+            if (error instanceof ZoomError) {
+                const enhancedError = new ZoomError(
+                    `Failed to revoke Zoom tokens: ${error.message}`,
+                    {
+                        ...error.details,
+                        accessToken: accessToken ? `${accessToken.substring(0, 10)}...` : 'undefined',
+                        operation: 'revoke_tokens'
+                    }
+                );
+                throw enhancedError;
+            }
+            throw error;
+        }
     }
 
     verifyEvent(event: ZoomEventRequest): boolean {

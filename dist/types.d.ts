@@ -1,6 +1,20 @@
 export declare class ZoomError extends Error {
-    constructor(msg: any);
+    details?: any;
+    constructor(msg: string, details?: any);
 }
+export type ZoomErrorDetails = {
+    status?: number;
+    statusText?: string;
+    url?: string;
+    method?: string;
+    responseBody?: any;
+    timeout?: number;
+    originalError?: string;
+    refreshToken?: string;
+    code?: string;
+    accessToken?: string;
+    operation?: string;
+};
 export type ZoomClientOptions = {
     clientId: string;
     clientSecret: string;
