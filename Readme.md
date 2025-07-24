@@ -14,6 +14,41 @@ npm install @flute-inc/zoom-api-client
 
 For now, this package includes only those APIs which Nektar uses. You can easily extend the functionality in your project and even contribute directly over here!
 
+### Error Handling
+
+This package provides detailed error information when API calls fail. All errors include:
+
+- **HTTP Status Code**: The HTTP status code returned by Zoom API
+- **Status Text**: The HTTP status text (e.g., "Bad Request", "Unauthorized")
+- **Request URL**: The URL that was called
+- **Request Method**: The HTTP method used (GET, POST, etc.)
+- **Response Body**: The complete response body from Zoom API
+- **Operation Context**: Additional context about the operation being performed
+
+Example error handling:
+
+```js
+import { ZoomOauth, ZoomError } from '@flute-inc/zoom-api-client';
+
+try {
+  const tokens = await zoomOauth.refreshTokens(refreshToken);
+} catch (error) {
+  if (error instanceof ZoomError) {
+    console.error('Error message:', error.message);
+    console.error('HTTP Status:', error.details.status);
+    console.error('Response Body:', error.details.responseBody);
+    console.error('Operation:', error.details.operation);
+  }
+}
+```
+
+Common error scenarios and their details:
+
+- **Token Refresh Failures**: Includes refresh token context and operation type
+- **Authentication Errors**: Includes authorization code context
+- **API Rate Limiting**: Includes rate limit headers and retry information
+- **Network Timeouts**: Includes timeout duration and request details
+
 ### ZoomClient
 
 This is the core provider of all authentication and requests for Zoom.
